@@ -82,3 +82,51 @@ def index():
 if __name__ == '__main__':
     # Inicia el servidor
     app.run(debug=True, port=5000)
+    # pwa-nubarium/app.py
+
+# ... (código existente, incluyendo las rutas index y api_inventario)
+
+@app.route('/api/validar_rfc', methods=['POST'])
+def api_validar_rfc():
+    try:
+        # Obtener el RFC del cuerpo de la solicitud JSON enviada por el frontend
+        data = request.get_json()
+        rfc_a_validar = data.get('rfc')
+
+        if not rfc_a_validar:
+            return jsonify({'detalle': 'Falta el campo "rfc" en la solicitud.'}), 400
+
+        # El código de Nubarium sugiere una conexión a 'rfc.nubarium.com'
+        # y el path '/sat/valida_rfc' (o similar)
+        # Adaptaremos esto al módulo 'requests' para mayor facilidad.
+
+        # URL del servicio de validación de RFC
+        url = "https://rfc.nubarium.com/sat/valida_rfc"
+        
+        # Payload (cuerpo de la solicitud)
+        payload = json.dumps({
+            "rfc": rfc_a_validar # Usamos el RFC que el usuario envió desde el frontend
+        })
+
+        # Encabezados (headers) - Es crucial para la autenticación en Nubarium
+        # NOTA: Debes incluir aquí tu clave de autenticación si la API lo requiere.
+        # Asumiremos que la API de validación funciona sin la clave, o la pide en el payload.
+        # Si la pide en el header, deberás ajustarlo.
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        # Realizar la solicitud POST a Nubarium
+        response = requests.post(url, data=payload, headers=headers)
+        
+        # Devolver la respuesta de Nubarium al frontend (tal como viene)
+        return jsonify(response.json()), response.status_code
+
+    except requests.exceptions.RequestException as e:
+        # Manejo de errores de conexión de red
+        print(f"Error de conexión con Nubarium: {e}")
+        return jsonify({'detalle': f'Error de conexión de red con Nubarium: {e}'}), 503
+    except Exception as e:
+        # Manejo de errores internos
+        print(f"Error interno: {e}")
+        return jsonify({'detalle': f'Error interno del servidor: {e}'}), 500
