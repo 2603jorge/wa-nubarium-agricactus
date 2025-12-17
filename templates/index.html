@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricactus - Dashboard PWA</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="stylesheet" href="/static/css/styles.css"> 
+</head>
+<body>
+    <div id="app">
+        <aside id="sidebar">
+            <div class="logo">AGRI CACTUS</div>
+            <nav>
+                <a href="#" class="active" data-route="dashboard">Dashboard</a>
+                <a href="#" data-route="inventario">Inventario</a>
+                </nav>
+        </aside>
+
+        <main id="main-content">
+            <header>
+                <h1>Dashboard Principal</h1>
+            </header>
+            
+            <section id="content-display">
+                <p>Bienvenido a Agricactus. Usa el menú lateral para consultar datos.</p>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/service-worker-setup.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

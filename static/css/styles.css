@@ -1,0 +1,100 @@
+/* static/css/styles.css - Estilos básicos para replicar la estructura */
+
+:root {
+    --sidebar-bg: #2d3e00; /* Verde oscuro (casi negro) */
+    --header-bg: #4e6a00; /* Verde oliva (cabecera) */
+    --text-light: #ffffff;
+    --text-dark: #333;
+    --primary-color: #4e6a00;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    background-color: #f4f4f4;
+}
+
+#app {
+    display: flex;
+    height: 100%;
+}
+
+/* --- Barra Lateral (Sidebar) --- */
+#sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    flex-shrink: 0;
+}
+
+.logo {
+    text-align: center;
+    padding: 10px 0 30px 0;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffcc00; /* Un toque de color para el logo */
+}
+
+#sidebar nav {
+    flex-grow: 1;
+    padding: 0 10px;
+}
+
+#sidebar nav a {
+    display: block;
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    text-decoration: none;
+    color: var(--text-light);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+#sidebar nav a:hover,
+#sidebar nav a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Contenido Principal --- */
+#main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#main-content header {
+    background-color: var(--header-bg);
+    color: var(--text-light);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#content-display {
+    padding: 25px;
+    overflow-y: auto;
+    flex-grow: 1;
+    background-color: #ffffff;
+    border-radius: 8px;
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilo para mostrar los datos de la API */
+#content-display pre {
+    background-color: #f0f0f0;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
