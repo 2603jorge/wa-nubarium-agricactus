@@ -83,38 +83,52 @@ def get_inventario():
 def api_validar_rfc():
     """Ruta para Validar RFC: Petición POST directa a rfc.nubarium.com/sat/valida_rfc."""
     try:
-        # 1. Obtener datos del frontend (el RFC)
         data = request.get_json()
         rfc_a_validar = data.get('rfc')
 
         if not rfc_a_validar:
             return jsonify({'detalle': 'Falta el campo "rfc" en la solicitud.'}), 400
 
-        # 2. Configurar la petición a Nubarium (basado en el ejemplo http.client)
-        # NOTA: Esta URL es diferente a la de los servicios de token/inventario
         url = "https://rfc.nubarium.com/sat/valida_rfc"
         
-        # 3. Payload: Usamos json=data para que requests lo maneje directamente
+        # Usamos json=payload_dict
         payload_dict = {"rfc": rfc_a_validar} 
 
         headers = {'Content-Type': 'application/json'}
 
-        # 4. Realizar la solicitud POST
-        # Usamos json=payload_dict en lugar de data=json.dumps(...)
+        # Realizar la solicitud POST
         response = requests.post(url, json=payload_dict, headers=headers, timeout=10)
         
-        # 5. Devolver la respuesta de Nubarium
-        return jsonify(response.json()), response.status_code
+        # --- CAMBIO CRUCIAL AQUÍ ---
+        
+        # 1. Verificar si la respuesta fue exitosa (200) y si tiene contenido JSON
+        if response.content:
+            try:
+                # Intentamos parsear el JSON de la respuesta de Nubarium
+                return jsonify(response.json()), response.status_code
+            except json.JSONDecodeError:
+                # Si no es JSON válido (ej. texto simple o error HTML), devolvemos el contenido bruto
+                return jsonify({
+                    "detalle": "Respuesta no JSON de Nubarium",
+                    "contenido_bruto": response.text,
+                    "status": response.status_code
+                }), 500
+        else:
+            # Si la respuesta es vacía (status 204 No Content)
+            return jsonify({
+                "detalle": "El servidor de Nubarium devolvió una respuesta vacía.", 
+                "status": response.status_code
+            }), response.status_code # Usamos el status code real de Nubarium
 
     except requests.exceptions.RequestException as e:
         # Error de red o timeout
         print(f"Error de conexión con Nubarium: {e}")
         return jsonify({'detalle': f'Error de conexión de red o timeout con Nubarium: {e}'}), 503
     except Exception as e:
-        # Error interno (Capturaremos el error real)
+        # Error interno (Manejo genérico)
         import traceback
         traceback.print_exc()
-        return jsonify({'detalle': f'Error interno del servidor (Revisar logs): {e}'}), 500
+        return jsonify({'detalle': f'Error interno del servidor: {e}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
