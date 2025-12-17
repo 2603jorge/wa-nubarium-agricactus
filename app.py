@@ -81,26 +81,29 @@ def get_inventario():
 
 @app.route('/api/validar_rfc', methods=['POST'])
 def api_validar_rfc():
-    """Ruta para Validar RFC: Petición POST directa."""
+    """Ruta para Validar RFC: Petición POST directa a rfc.nubarium.com/sat/valida_rfc."""
     try:
+        # 1. Obtener datos del frontend (el RFC)
         data = request.get_json()
         rfc_a_validar = data.get('rfc')
 
         if not rfc_a_validar:
             return jsonify({'detalle': 'Falta el campo "rfc" en la solicitud.'}), 400
 
-        # URL específica para la validación de RFC (como en el ejemplo de Nubarium)
+        # 2. Configurar la petición a Nubarium (basado en el ejemplo http.client)
+        # NOTA: Esta URL es diferente a la de los servicios de token/inventario
         url = "https://rfc.nubarium.com/sat/valida_rfc"
         
-        # Payload de la petición POST
-        payload = json.dumps({"rfc": rfc_a_validar})
+        # 3. Payload: Usamos json=data para que requests lo maneje directamente
+        payload_dict = {"rfc": rfc_a_validar} 
 
         headers = {'Content-Type': 'application/json'}
 
-        # Realizar la solicitud POST a Nubarium
-        response = requests.post(url, data=payload, headers=headers, timeout=10)
+        # 4. Realizar la solicitud POST
+        # Usamos json=payload_dict en lugar de data=json.dumps(...)
+        response = requests.post(url, json=payload_dict, headers=headers, timeout=10)
         
-        # Devolver la respuesta de Nubarium (éxito o error 4xx/5xx)
+        # 5. Devolver la respuesta de Nubarium
         return jsonify(response.json()), response.status_code
 
     except requests.exceptions.RequestException as e:
@@ -108,9 +111,10 @@ def api_validar_rfc():
         print(f"Error de conexión con Nubarium: {e}")
         return jsonify({'detalle': f'Error de conexión de red o timeout con Nubarium: {e}'}), 503
     except Exception as e:
-        # Error interno
-        print(f"Error interno: {e}")
-        return jsonify({'detalle': f'Error interno del servidor: {e}'}), 500
+        # Error interno (Capturaremos el error real)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'detalle': f'Error interno del servidor (Revisar logs): {e}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
