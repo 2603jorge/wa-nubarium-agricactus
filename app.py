@@ -89,9 +89,10 @@ def api_validar_rfc():
         if not rfc_a_validar:
             return jsonify({'detalle': 'Falta el campo "rfc" en la solicitud.'}), 400
 
+        # URL de validación de RFC (del ejemplo de Nubarium)
         url = "https://rfc.nubarium.com/sat/valida_rfc"
         
-        # Usamos json=payload_dict
+        # Payload (diccionario que 'requests' serializará a JSON)
         payload_dict = {"rfc": rfc_a_validar} 
 
         headers = {'Content-Type': 'application/json'}
@@ -99,35 +100,32 @@ def api_validar_rfc():
         # Realizar la solicitud POST
         response = requests.post(url, json=payload_dict, headers=headers, timeout=10)
         
-        # --- CAMBIO CRUCIAL AQUÍ ---
+        # --- Manejo de la Respuesta de Nubarium (Más Robusto) ---
         
-        # 1. Verificar si la respuesta fue exitosa (200) y si tiene contenido JSON
+        # Si el status code es 200, 400, 404, etc., intentamos leer el JSON
         if response.content:
             try:
-                # Intentamos parsear el JSON de la respuesta de Nubarium
+                # 1. Intenta leer el JSON
                 return jsonify(response.json()), response.status_code
-            except json.JSONDecodeError:
-                # Si no es JSON válido (ej. texto simple o error HTML), devolvemos el contenido bruto
+            except json.JSONDecodeError as e:
+                # 2. Si falla la decodificación, muestra el contenido BRUTO
                 return jsonify({
-                    "detalle": "Respuesta no JSON de Nubarium",
-                    "contenido_bruto": response.text,
-                    "status": response.status_code
+                    "detalle": f"Respuesta no válida (JSON Decode Error: {e})",
+                    "status_nubarium": response.status_code,
+                    "contenido_bruto": response.text # <--- ESTO NOS DARÁ LA CLAVE
                 }), 500
         else:
-            # Si la respuesta es vacía (status 204 No Content)
+            # Si no hay contenido (ej. Status 204 No Content)
             return jsonify({
                 "detalle": "El servidor de Nubarium devolvió una respuesta vacía.", 
-                "status": response.status_code
-            }), response.status_code # Usamos el status code real de Nubarium
+                "status_nubarium": response.status_code
+            }), response.status_code
 
     except requests.exceptions.RequestException as e:
         # Error de red o timeout
-        print(f"Error de conexión con Nubarium: {e}")
         return jsonify({'detalle': f'Error de conexión de red o timeout con Nubarium: {e}'}), 503
     except Exception as e:
-        # Error interno (Manejo genérico)
-        import traceback
-        traceback.print_exc()
+        # Error interno de Flask
         return jsonify({'detalle': f'Error interno del servidor: {e}'}), 500
 
 if __name__ == '__main__':
